@@ -72,6 +72,9 @@ def detect_mood():
         faces=face_cascade.detectMultiScale(gray, 1., 5)
         for (x, y, w, h) in faces:
             face_roi=frame[y:y+h, x:x+w]
+            try:
+                anaylysis=DeepFace.analyze(face_roi, actions=["emotion"])
+                emotion=anaylysis["dominant_emotion"]
 
 
 token=get_token()
