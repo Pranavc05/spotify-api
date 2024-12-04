@@ -3,7 +3,7 @@ import os
 import base64
 from requests import get, post
 import json
-
+import cv2
 load_dotenv()
 
 client_id=os.getenv("CLIENT_ID")
@@ -54,6 +54,10 @@ def tracks_by_moods(audio_features, moods):
     moods=["happy", "sad", "calm", "excited"]
     if user_feelings not in moods:
         print("Invalid mood")
+
+
+    
+
 
     
     
