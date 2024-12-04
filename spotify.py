@@ -37,7 +37,7 @@ def extract_audio_features(track_ids, token):
     return audio_features
 
 def tracks_by_moods(audio_features, moods):
-    mood_tracker={
+    mood_map={
         "happy": {"danceability": 0.7, "energy": 0.7, "tempo": 120},
         "sad": {"danceability": 0.3, "energy": 0.3, "tempo": 70},
         "calm": {"danceability": 0.5, "energy": 0.5, "tempo": 80},
@@ -45,12 +45,22 @@ def tracks_by_moods(audio_features, moods):
     }
     selected_tracks=[]
     for track in audio_features:
-        mood_criteria=mood_tracker[mood]
-        if track["danceability"] >= mood_criteria["danceability"] and track["energy"] >= mood_criteria["energy"] and track["tempo"] <= mood_criteria["tempo"]:
+        mood_criteria=mood_map[mood]
+        if track["danceability"] >= mood_criteria["danceability"] and track["energy"] >= mood_criteria["energy"] and track["tempo"] >= mood_criteria["tempo"]:
             selected_tracks.append(track)
     return selected_tracks  
 
+    user_feelings=input("What mood are you in? (happy, sad, calm, excited): ").lower()
+    moods=["happy", "sad", "calm", "excited"]
+    if user_feelings not in moods:
+        print("Invalid mood")
+
     
+    
+
+
+
+
     
 #def search_for_artist(token, artist_name):
  #   url="https://api.spotify.com/v1/search"
