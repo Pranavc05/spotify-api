@@ -57,19 +57,18 @@ def tracks_by_moods(audio_features, moods):
 
 def detect_mood():
     cap=cv2.VideoCapture(0)
+    mood="neutral"
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
+    face_cascade=cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
     while True:
         ret, frame=cap.read()
         if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
+            print("Can't receive frame")
             break
-        cv2.imshow("frame", frame)
-        if cv2.waitKey(1) == ord("q"):
-            break
-    
-
+        gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces=face_cascade.detectMultiScale(gray, 1., 5)
 
     
     
