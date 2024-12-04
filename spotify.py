@@ -75,6 +75,15 @@ def detect_mood():
             try:
                 anaylysis=DeepFace.analyze(face_roi, actions=["emotion"])
                 emotion=anaylysis["dominant_emotion"]
+                if emotion in ["happy", "suprise,", "amusement"]:
+                    mood="happy"
+                elif emotion in ["sad", "angry", "disgust"]:
+                    mood="sad"
+                elif emotion in ["calm", "relaxed", "neutral"]:
+                    mood="calm"
+                elif emotion in ["excited", "surprised", "happy"]:
+                    mood="excited"
+                break
 
 
 token=get_token()
