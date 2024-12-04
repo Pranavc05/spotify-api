@@ -5,6 +5,7 @@ from requests import get, post
 import json
 import cv2
 load_dotenv()
+from deepface import DeepFace
 
 client_id=os.getenv("CLIENT_ID")
 client_secret=os.getenv("CLIENT_SECRET")
@@ -69,6 +70,11 @@ def detect_mood():
             break
         gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces=face_cascade.detectMultiScale(gray, 1., 5)
+        for (x, y, w, h) in faces:
+            face_roi=frame[y:y+h, x:x+w]
+
+
+token=get_token()
 
     
     
@@ -99,7 +105,7 @@ def detect_mood():
     #json_result=json.loads(result.content)["tracks"]
     #return json_result
         
-token=get_token()
+
 #result=search_for_artist(token, "ACDC")
 #artist_id=result["id"]
 #songs=get_songs_by_artist(token, artist_id)
