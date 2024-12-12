@@ -69,13 +69,13 @@ def detect_mood():
             print("Can't receive frame")
             break
         gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces=face_cascade.detectMultiScale(gray, 1., 5)
+        faces=face_cascade.detectMultiScale(gray, 1.1, 4)
         for (x, y, w, h) in faces:
             face_roi=frame[y:y+h, x:x+w]
             try:
-                anaylysis=DeepFace.analyze(face_roi, actions=["emotion"])
-                emotion=anaylysis["dominant_emotion"]
-                if emotion in ["happy", "suprise,", "amusement"]:
+                analysis=DeepFace.analyze(face_roi, actions=["emotion"])
+                emotion=analysis["dominant_emotion"]
+                if emotion in ["happy", "joyful", "amusement"]:
                     mood="happy"
                 elif emotion in ["sad", "angry", "disgust"]:
                     mood="sad"
@@ -84,6 +84,219 @@ def detect_mood():
                 elif emotion in ["excited", "surprised", "happy"]:
                     mood="excited"
                 break
+            except Exception as e:
+                print(f"Can't detect emotion: {e}")
+                mood="neutral"
+                break
+        if mood != "neutral":
+            break
+        
+    cap.release()
+    cv2.destroyAllWindows()
+    return mood
+
+    user_mood=detect_mood()
+
+    def make_playlist_by_mood(user_id, token,name,description,):
+        url=f"https://api.sporify.com/i/v1/users/{user_id}/playlists"
+        headers=get_auth_header(token)
+        data={
+            "name":name,
+            "description":description,
+            "public":True
+        }
+        result=post(url, headers=headers, json=data)
+        playlist_id=json.loads(result.content)["id"]
+        return playlist_id
+        
+            
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        
+
+        
+
+    
 
 
 token=get_token()
