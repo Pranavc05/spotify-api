@@ -46,15 +46,19 @@ def tracks_by_moods(audio_features, moods):
     }
     selected_tracks=[]
     for track in audio_features:
-        mood_criteria=mood_map[mood]
-        if track["danceability"] >= mood_criteria["danceability"] and track["energy"] >= mood_criteria["energy"] and track["tempo"] >= mood_criteria["tempo"]:
-            selected_tracks.append(track)
-    return selected_tracks  
+        for mood in moods:
+            mood_criteria=mood_map[mood]
+            if track["danceability"] >= mood_criteria["danceability"] and track["energy"] >= mood_criteria["energy"] and track["tempo"] >= mood_criteria["tempo"]:
+                selected_tracks.append(track)
+    return selected_tracks
 
-    user_feelings=input("What mood are you in? (happy, sad, calm, excited): ").lower()
-    moods=["happy", "sad", "calm", "excited"]
+def get_user_mood():
+    user_feelings = input("What mood are you in? (happy, sad, calm, excited): ").lower() 
+    moods = ["happy", "sad", "calm", "excited"]
     if user_feelings not in moods:
         print("Invalid mood")
+        return None
+    return user_feelings
 
 def detect_mood():
     cap=cv2.VideoCapture(0)
@@ -95,219 +99,92 @@ def detect_mood():
     cv2.destroyAllWindows()
     return mood
 
-    user_mood=detect_mood()
+def make_playlist_by_mood(user_id, token, name, description):
+    url = f"https://api.spotify.com/v1/users/{user_id}/playlists"
+    headers = get_auth_header(token)
+    data = {
+        "name": name,
+        "description": description,
+        "public": True
+    }
+    result = post(url, headers=headers, json=data)
+    playlist_id = json.loads(result.content)["id"]
+    return playlist_id
 
-    def make_playlist_by_mood(user_id, token,name,description,):
-        url=f"https://api.sporify.com/i/v1/users/{user_id}/playlists"
-        headers=get_auth_header(token)
-        data={
-            "name":name,
-            "description":description,
-            "public":True
-        }
-        result=post(url, headers=headers, json=data)
-        playlist_id=json.loads(result.content)["id"]
-        return playlist_id
-        
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-        
-
-        
-
+def search_tracks_by_mood(token, mood):
+    url = "https://api.spotify.com/v1/recommendations"
+    headers = get_auth_header(token)
     
-
-
-token=get_token()
-
+    # Map moods to Spotify parameters
+    mood_params = {
+        "happy": {"min_valence": 0.7, "min_energy": 0.7, "target_tempo": 120},
+        "sad": {"min_valence": 0.1, "max_valence": 0.4, "target_tempo": 70},
+        "calm": {"max_energy": 0.5, "target_tempo": 80, "max_valence": 0.6},
+        "excited": {"min_energy": 0.8, "min_valence": 0.6, "target_tempo": 130}
+    }
     
+    params = {
+        "limit": 20,
+        "market": "US",
+        "seed_genres": "pop,rock,hip-hop,electronic,r-n-b",
+        **mood_params[mood]
+    }
     
+    result = get(url, headers=headers, params=params)
+    json_result = json.loads(result.content)
+    return [track["id"] for track in json_result["tracks"]]
 
+def add_tracks_to_playlist(token, playlist_id, track_ids):
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
+    headers = get_auth_header(token)
+    data = {
+        "uris": [f"spotify:track:{track_id}" for track_id in track_ids]
+    }
+    result = post(url, headers=headers, json=data)
+    return result.status_code == 201
 
-
-
+def main():
+    print("Welcome to Mood-Based Music Player!")
+    print("1. Detect mood from camera")
+    print("2. Enter mood manually")
+    choice = input("Choose an option (1/2): ")
     
+    if choice == "1":
+        mood = detect_mood()
+        print(f"Detected mood: {mood}")
+    else:
+        mood = get_user_mood()
+        if not mood:
+            return
+    
+    # You need to replace this with your Spotify user ID
+    user_id = input("Enter your Spotify user ID: ")
+    
+    # Create a new playlist
+    playlist_name = f"My {mood.capitalize()} Playlist"
+    playlist_description = f"A playlist generated based on {mood} mood"
+    
+    try:
+        playlist_id = make_playlist_by_mood(user_id, token, playlist_name, playlist_description)
+        print(f"Created playlist: {playlist_name}")
+        
+        # Get tracks based on mood
+        track_ids = search_tracks_by_mood(token, mood)
+        
+        # Add tracks to playlist
+        if add_tracks_to_playlist(token, playlist_id, track_ids):
+            print("Successfully added tracks to your playlist!")
+            print(f"Check your Spotify account for the playlist: {playlist_name}")
+        else:
+            print("Failed to add tracks to playlist")
+    
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+if __name__ == "__main__":
+    token = get_token()
+    main()
+
 #def search_for_artist(token, artist_name):
  #   url="https://api.spotify.com/v1/search"
   #  headers=get_auth_header(token)
